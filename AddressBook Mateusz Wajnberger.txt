@@ -1,0 +1,323 @@
+#include <iostream>
+#include <windows.h>
+#include <cstdlib>
+#include <stdlib.h>
+#include <string>
+#include <fstream>
+#include <vector>
+#include <cstring>
+#include <sstream>
+#include <algorithm>
+
+using namespace std;
+
+struct Person
+{
+    int id;
+    string name, surname, phoneNumber, emailAddress, address;
+};
+void splitTheContactIntoSeparateDataAndAddThemToTheAppriopiateFieldsOfTheObject (string theLineFromTheTextFile, Person person, vector < Person > &people)
+{
+    string name, surname, phoneNumber, emailAddress, address;
+    int id;
+    string substr;
+
+    stringstream theLineToSplitToSeparateData;
+    theLineToSplitToSeparateData << theLineFromTheTextFile;
+    getline( theLineToSplitToSeparateData, substr, '|' );
+    person.id = atoi(substr.c_str());
+    getline( theLineToSplitToSeparateData, substr, '|' );
+    person.name = substr;
+    getline( theLineToSplitToSeparateData, substr, '|' );
+    person.surname = substr;
+    getline( theLineToSplitToSeparateData, substr, '|' );
+    person.phoneNumber = substr;
+    getline( theLineToSplitToSeparateData, substr, '|' );
+    person.emailAddress = substr;
+    getline( theLineToSplitToSeparateData, substr, '|' );
+    person.address = substr;
+
+    people.push_back(person);
+}
+void addTheContact(Person person, vector < Person > &people)
+{
+    int personId;
+    string name, surname, phoneNumber, emailAddress, address;
+    system("cls");
+    cout << "Enter the name of the user: ";
+    cin >> name;
+    cout << "Enter the surname of the user: ";
+    cin >> surname;
+    cout << "Enter the phone number of the user: ";
+    cin.sync();
+    getline(cin, phoneNumber);
+    cout << "Enter the email address of the user: ";
+    cin >> emailAddress;
+    cout << "Enter the address of the user: ";
+    cin.sync();
+    getline(cin, address);
+
+    if(people.size() == 0)
+        personId = 1;
+    else
+        personId = people.back().id + 1;
+
+    person.id = personId;
+    person.name = name;
+    person.surname = surname;
+    person.phoneNumber = phoneNumber;
+    person.emailAddress = emailAddress;
+    person.address = address;
+
+    fstream file;
+    file.open("AddressBook.txt", ios::out | ios::app);
+    if (file.good()){
+        file << personId << "|";
+        file << name << "|";
+        file << surname << "|";
+        file << phoneNumber << "|";
+        file << emailAddress << "|";
+        file << address << "|" << endl;
+
+        file.close();
+
+        cout << endl << "New person has been added" << endl;
+        Sleep(2000);
+    }
+    else
+        cout << "Could not open file AddressBook.txt " << endl;
+    people.push_back(person);
+
+}
+void loadTheContactFromeThefile(Person  person, vector < Person > &people)
+{
+    fstream file;
+    file.open("AddressBook.txt",ios::in);
+    if(file.good() == false)
+        cout << "Could not open file AddressBook.txt" << endl;
+    string theLineFromTheTextFile;
+
+    while(getline(file, theLineFromTheTextFile)){
+        if(theLineFromTheTextFile.empty())
+            continue;
+        else
+            splitTheContactIntoSeparateDataAndAddThemToTheAppriopiateFieldsOfTheObject(theLineFromTheTextFile, person, people);
+    }
+    file.close();
+}
+void loadTheContactByTheName(vector < Person > &people)
+{
+    string name;
+    bool ifThePersonWasFound = false;
+    cout << "Enter the name of the user: ";
+    cin >> name;
+    int i = 0;
+    int numberingOfFoundPeople = 1;
+    while(i < people.size()){
+        if(people[i].name == name){
+            cout << endl << numberingOfFoundPeople << "." << "Name: " << people[i].name << endl;
+            cout << "  Surname: " << people[i].surname << endl;
+            cout << "  Phone number: " << people[i].phoneNumber << endl;
+            cout << "  Email Address: " << people[i].emailAddress << endl;
+            cout << "  Address: " << people[i].address << endl;
+            ifThePersonWasFound = true;
+            numberingOfFoundPeople++;
+        }
+        i++;
+    }
+    if(ifThePersonWasFound == false)
+        cout<< endl << "There is no such contact. Return to the main menu." << endl;
+    cout << endl;
+    system("Pause");
+}
+void loadTheContactByTheSurname(vector < Person > &people)
+{
+    string surname;
+    bool ifThePersonWasFound = false;
+    cout << "Enter the surname of the user: ";
+    cin >> surname;
+    int i = 0;
+    int numberingOfFoundPeople = 1;
+    while(i < people.size()){
+        if(people[i].surname == surname){
+            cout << endl << numberingOfFoundPeople << "." << "Name: " << people[i].name << endl;
+            cout << "  Surname: " << people[i].surname << endl;
+            cout << "  Phone number: " << people[i].phoneNumber << endl;
+            cout << "  Email Address: " << people[i].emailAddress << endl;
+            cout << "  Address: " << people[i].address << endl;
+            ifThePersonWasFound = true;
+            numberingOfFoundPeople++;
+        }
+        i++;
+    }
+    if(ifThePersonWasFound == false)
+        cout<<"There is no such contact. Return to the main menu" << endl << endl;
+    cout << endl;
+    system("Pause");
+}
+void displayAllContacts(vector < Person > &people)
+{
+    int i = 0;
+    int numberingOfFoundPeople = 1;
+    while(i < people.size()){
+        cout << numberingOfFoundPeople << "." << "Name: " << people[i].name << endl;
+        cout << "  Surname: " << people[i].surname << endl;
+        cout << "  Phone number: " << people[i].phoneNumber << endl;
+        cout << "  Email Address: " << people[i].emailAddress << endl;
+        cout << "  Address: " << people[i].address << endl << endl;
+        numberingOfFoundPeople++;
+        i++;
+    }
+    system("Pause");
+}
+void deleteContact(vector < Person > &people, Person person)
+{
+    int personIdWhichShouldBeDeleted, lineWhichShouldBeDeleted;
+    char confirmationOfRemoval;
+    cout << "Enter a contact ID: ";
+    cin >> personIdWhichShouldBeDeleted;
+    int i = 0;
+    while( i < people.size()){
+        if(people[i].id == personIdWhichShouldBeDeleted){
+            cout << endl << "Are you sure you want to permanently remove this contact? If yes, enter 'y': ";
+            cin >> confirmationOfRemoval;
+            cout << endl;
+            if(confirmationOfRemoval == 'y'){
+                people.erase(people.begin()+ i);
+                ofstream file;
+                file.open("AddressBook.txt", ios::out);
+                if (file.good()){
+                    for(int i = 0; i < people.size(); ++i){
+                        file << people[i].id << "|";
+                        file << people[i].name << "|";
+                        file << people[i].surname << "|";
+                        file << people[i].phoneNumber << "|";
+                        file << people[i].emailAddress << "|";
+                        file << people[i].address << "|" << endl;
+                    }
+                    file.close();
+                    break;
+                }
+                else
+                    cout << "Could not open file AddressBook.txt " << endl;
+            }
+            else{
+                cout << "Another character has been entered. Return to the main menu. " << endl;
+                Sleep(2000);
+            }
+        }
+        ++i;
+    }
+}
+void editContact(vector < Person > &people, Person person)
+{
+    int personId, choice;
+    string newName, oldName, newSurname, newPhoneNumber, newEmailAddress, newAddress;
+    int i = 0;
+    cout << "Enter contact ID: ";
+    cin >> personId;
+    while( i < people.size()){
+        if(people[i].id == personId){
+            cout << endl << "1 - name" << endl;
+            cout << "2 - surname" << endl;
+            cout << "3 - phoneNumber" << endl;
+            cout << "4 - emailAddress" << endl;
+            cout << "5 - address" << endl;
+            cout << "6 - return to menu" << endl;
+
+            cout << endl << "Select the option: ";
+            cin >> choice;
+
+            switch(choice)
+            {
+            case 1:{
+                cout << endl << "Enter a new name: ";
+                cin >> newName;
+                people[i].name = newName;
+                break;
+            }
+            case 2:{
+                cout << endl << "Enter a new surname: ";
+                cin >> newSurname;
+                people[i].surname = newSurname;
+                break;
+            }
+            case 3:{
+                cout << endl << "Enter a new phone number: ";
+                cin >> newPhoneNumber;
+                people[i].phoneNumber = newPhoneNumber;
+                break;
+            }
+            case 4:{
+                cout << endl << "Enter a new email address: ";
+                cin >> newEmailAddress;
+                people[i].emailAddress = newEmailAddress;
+                break;
+            }
+            case 5:{
+                cout << endl << "Enter a new address: ";
+                cin >> newAddress;
+                people[i].address = newAddress;
+                break;
+            }
+            case 6:
+                break;
+            }
+        }
+        ++i;
+    }
+    fstream file;
+    file.open("AddressBook.txt", ios::out);
+    if (file.good()){
+        for(int i = 0; i < people.size(); ++i){
+            file << people[i].id << "|";
+            file << people[i].name << "|";
+            file << people[i].surname << "|";
+            file << people[i].phoneNumber << "|";
+            file << people[i].emailAddress << "|";
+            file << people[i].address << "|" << endl;
+        }
+        file.close();
+    }
+    else{
+        cout << "Could not open file AddressBook.txt " << endl;
+        Sleep(2000);
+    }
+}
+int main()
+{
+    Person person;
+    vector < Person > people;
+    char choice;
+    loadTheContactFromeThefile(person, people);
+
+    while(true){
+        system ("cls");
+        cout << "  == ADDRESS BOOK ==    " << endl;
+        cout << "1.Add a new contact" << endl;
+        cout << "2.Load a contact by name" << endl;
+        cout << "3.Load a contact by surname" << endl;
+        cout << "4.Display all contacts" << endl;
+        cout << "5.Remove a contact" << endl;
+        cout << "6.Edit a contact" << endl;
+        cout << "9.End of the program" << endl <<endl;
+        cin >> choice;
+        system ("cls");
+
+        if(choice == '1')
+            addTheContact(person, people);
+        else if(choice == '2')
+            loadTheContactByTheName(people);
+        else if(choice == '3')
+            loadTheContactByTheSurname(people);
+        else if(choice == '4')
+            displayAllContacts(people);
+        else if(choice == '5')
+            deleteContact(people, person);
+        else if(choice == '6')
+            editContact(people, person);
+        else if(choice == '9')
+            exit(0);
+    }
+    return 0;
+}
